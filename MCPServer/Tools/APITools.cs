@@ -2,6 +2,8 @@ using ModelContextProtocol.Server;
 using Serilog;
 using System.ComponentModel;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace MCPServer.Tools
 {
@@ -9,13 +11,17 @@ namespace MCPServer.Tools
     public sealed class APITools
     {
         private const string JsonMediaType = "application/json";
-        private const string RegisterDescription = "Register a user account. An email will be sent upon successful registration.";
+        private const string RegisterDescription = "Register a user account. Upon successful registration, an email will be sent containing your login details. Please check your inbox for your email address and password. The password is provided for your convenience; it is recommended that you change it after your first login.";
+        private const string LoginDescription = "Log in using your email and password. A Bearer token will be returned for authentication purposes. Do not expose the token to the user.";
+        private const string ChangePasswordDescription = "Change the user's password. Requires a valid Bearer token obtained from a successful login. After a successful password change, do not expose the token. Briefly explain what the system has done.";
 
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly string _baseUrl;
 
-        public APITools(IHttpClientFactory httpClientFactory)
+        public APITools(IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
+            _baseUrl = configuration.GetSection("MCP:BaseUrl").Value;
         }
 
         [McpServerTool, Description(RegisterDescription)]
@@ -32,7 +38,7 @@ namespace MCPServer.Tools
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                client.BaseAddress = new Uri("https://localhost:7190");
+                client.BaseAddress = new Uri(_baseUrl);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
 
@@ -41,14 +47,14 @@ namespace MCPServer.Tools
                 if (response.IsSuccessStatusCode)
                 {
                     Log.Information("Successfully registered user: {Email}", email);
-                    return "An email has been sent. Please check your inbox to complete registration.";
+                    return "An email has been sent. Please check your inbox to complete the registration.";
                 }
                 else
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     Log.Error("Failed to register user: {Email}, StatusCode: {StatusCode}, Error: {Error}",
                         email, response.StatusCode, errorContent);
-                    return $"Failed to register user. StatusCode: {response.StatusCode}";
+                    return $"Failed to register user. Status code: {response.StatusCode}";
                 }
             }
             catch (Exception ex)
@@ -56,6 +62,97 @@ namespace MCPServer.Tools
                 Log.Error(ex, "An exception occurred while registering user: {Email}", email);
                 return "An error occurred during registration.";
             }
+        }
+
+        [McpServerTool, Description(LoginDescription)]
+        public async Task<string> LoginAsync(
+            [Description("Email address to log in")] string email,
+            [Description("Password to log in")] string password)
+        {
+            var payload = new
+            {
+                email,
+                password
+            };
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri(_baseUrl);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
+
+                var response = await client.PostAsJsonAsync("/api/Identity/Login/Login", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    var token = ExtractTokenFromResponse(responseBody);
+
+                    Log.Information("Successfully logged in user: {Email}", email);
+                    return $"Login successful. Token: {token}";
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Log.Error("Failed to log in user: {Email}, StatusCode: {StatusCode}, Error: {Error}",
+                        email, response.StatusCode, errorContent);
+                    return $"Failed to log in user. Status code: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An exception occurred while logging in user: {Email}", email);
+                return "An error occurred during login.";
+            }
+        }
+
+        [McpServerTool, Description(ChangePasswordDescription)]
+        public async Task<string> ChangePasswordAsync(
+            [Description("Bearer token for authentication, obtained from the login response (returned as 'Your token: {token}').")] string token,
+            [Description("Current password")] string currentPassword,
+            [Description("New password to set")] string newPassword)
+        {
+            var payload = new
+            {
+                currentPassword,
+                newPassword
+            };
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri(_baseUrl);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+                var response = await client.PutAsJsonAsync("/api/Identity/ChangePassword/ChangePassword", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Log.Information("Successfully changed password for user.");
+                    return "Password changed successfully.";
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Log.Error("Failed to change password. StatusCode: {StatusCode}, Error: {Error}",
+                        response.StatusCode, errorContent);
+                    return $"Failed to change password. Status code: {response.StatusCode}";
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An exception occurred while changing password.");
+                return "An error occurred during password change.";
+            }
+        }
+
+        private string ExtractTokenFromResponse(string responseBody)
+        {
+            var jsonResponse = JsonDocument.Parse(responseBody);
+            return jsonResponse.RootElement.GetProperty("token").GetString();
         }
 
         private static string GenerateRandomPassword(int length)

@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
+using System.Threading.Tasks;
 
 internal class IdentityService : IIdentity
 {
@@ -7,13 +10,16 @@ internal class IdentityService : IIdentity
 
     private readonly UserManager<User> userManager;
     private readonly IJwtGenerator jwtGenerator;
+    private readonly IEmailSender emailSenderService; // Inject IEmailSender
 
     public IdentityService(
         UserManager<User> userManager,
-        IJwtGenerator jwtGenerator)
+        IJwtGenerator jwtGenerator,
+        IEmailSender emailSender) // Add emailSender in constructor
     {
         this.userManager = userManager;
         this.jwtGenerator = jwtGenerator;
+        this.emailSenderService = emailSender; // Assign emailSender
     }
 
     public async Task<Result<IUser>> Register(UserRequestModel userRequest)
@@ -26,9 +32,20 @@ internal class IdentityService : IIdentity
 
         var errors = identityResult.Errors.Select(e => e.Description);
 
-        return identityResult.Succeeded
-            ? Result<IUser>.SuccessWith(user)
-            : Result<IUser>.Failure(errors);
+        if (identityResult.Succeeded)
+        {
+            // Send humorous email after successful registration
+            var subject = "🎉 Hooray! Your Account is Ready 🎉";
+            var body = $"Congrats! 🎉 Your account has been created successfully. Now, the fun begins! 😎\n\n" +
+                       $"Please log in using your email: '{userRequest.Email}' and password: '{userRequest.Password}'.\n\n" +
+                       "Don’t forget to change your password once you're in... We won't judge! 😜";
+
+            await emailSenderService.SendEmailAsync(userRequest.Email, subject, body);
+
+            return Result<IUser>.SuccessWith(user);
+        }
+
+        return Result<IUser>.Failure(errors);
     }
 
     public async Task<Result<UserResponseModel>> Login(UserRequestModel userRequest)
@@ -73,7 +90,6 @@ internal class IdentityService : IIdentity
             ? Result.Success
             : Result.Failure(errors);
     }
-
 
     public Result<JsonWebKey> GetPublicKey()
     {

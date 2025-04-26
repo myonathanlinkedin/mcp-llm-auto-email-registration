@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -27,39 +26,38 @@ public static class InfrastructureConfiguration
         var audience = configuration.GetSection("ApplicationSettings").GetValue<string>("Audience");
 
         services
-             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-             .AddJwtBearer(options =>
-             {
-                 options.RequireHttpsMetadata = true; // Set to true in production
-                 options.SaveToken = true;
-                 options.TokenValidationParameters = new TokenValidationParameters
-                 {
-                     ValidateIssuer = true,
-                     ValidIssuer = issuer, // Replace with your issuer
-                     ValidateAudience = true,
-                     ValidAudience = audience, // Replace with your audience
-                     ValidateLifetime = true,
-                     ValidateIssuerSigningKey = true,
-                     IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-                     {
-                         using var httpClient = new HttpClient();
-                         var jwkJson = httpClient.GetStringAsync(jwksUrl).GetAwaiter().GetResult();
-                         var jwk = JsonSerializer.Deserialize<JsonWebKey>(jwkJson);
-                         return new List<JsonWebKey> { jwk };
-                     }
-                 };
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = true;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
+                    ValidateAudience = true,
+                    ValidAudience = audience,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+                    {
+                        using var httpClient = new HttpClient();
+                        var jwkJson = httpClient.GetStringAsync(jwksUrl).GetAwaiter().GetResult();
+                        var jwk = JsonSerializer.Deserialize<JsonWebKey>(jwkJson);
+                        return new List<JsonWebKey> { jwk };
+                    }
+                };
 
-                 options.Events = new JwtBearerEvents
-                 {
-                     OnAuthenticationFailed = context =>
-                     {
-                         // Log or inspect the exception here
-                         var ex = context.Exception;
-                         Console.WriteLine($"Token validation failed: {ex.Message}");
-                         return Task.CompletedTask;
-                     }
-                 };
-             });
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        var ex = context.Exception;
+                        Console.WriteLine($"Token validation failed: {ex.Message}");
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
         services.AddHttpContextAccessor();
 
@@ -82,7 +80,6 @@ public static class InfrastructureConfiguration
         IConfiguration configuration)
         where TDbContext : DbContext
         => services
-            .AddScoped<DbContext, TDbContext>()
             .AddDbContext<TDbContext>(options => options
                 .UseSqlServer(
                     configuration.GetDefaultConnectionString(),

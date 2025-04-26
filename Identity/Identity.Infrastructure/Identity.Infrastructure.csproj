@@ -5,6 +5,10 @@
         <Nullable>enable</Nullable>
         <RootNamespace>Identity.Infrastructure</RootNamespace>
     </PropertyGroup>
+    <ItemGroup>
+      <None Remove="Services\EmailSenderService.xpo" />
+      <None Remove="Services\EmailSenderService.xpo.diagram" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Common\Common.Infrastructure\Common.Infrastructure.csproj" />
