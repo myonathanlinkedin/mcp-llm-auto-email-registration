@@ -16,6 +16,8 @@ builder.Services
     })
     .AddHttpClient();
 
+builder.Services.AddMcpClient(builder.Configuration);
+
 var app = builder.Build();
 
 app
