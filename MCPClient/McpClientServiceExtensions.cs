@@ -24,8 +24,8 @@ public static class McpClientServiceExtensions
             return new OpenAIClient(apiKeyCredential, clientOptions);
         });
 
-        // Register ISamplingChatClient
-        services.AddScoped<ISamplingChatClient>(sp =>
+        // Register IChatClient
+        services.AddScoped<IChatClient>(sp =>
         {
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
@@ -33,7 +33,7 @@ public static class McpClientServiceExtensions
                 .AsIChatClient()
                 .AsBuilder()
                 .UseLogging(loggerFactory: loggerFactory)
-                .Build() as ISamplingChatClient;
+                .Build() as IChatClient;
 
             return chatClient ?? throw new InvalidCastException("SamplingChatClient build failed.");
         });
@@ -70,7 +70,7 @@ public static class McpClientServiceExtensions
         services.AddScoped<IMcpClient>(sp =>
         {
             var transport = sp.GetRequiredService<SseClientTransport>();
-            var samplingClient = sp.GetRequiredService<ISamplingChatClient>();
+            var samplingClient = sp.GetRequiredService<IChatClient>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
             return McpClientFactory.CreateAsync(

@@ -1,35 +1,70 @@
-using Microsoft.EntityFrameworkCore;
 using ModelContextProtocol.Server;
+using Serilog;
 using System.ComponentModel;
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using System.Net.Http.Headers;
 
 namespace MCPServer.Tools
 {
     [McpServerToolType]
     public sealed class APITools
     {
-        // Existing method
-        [McpServerTool, Description("Get echo with random seed")]
-        public static async Task<string> GetEchoRandomSeed([Description("Echo from the server with random seed")] string paramInput)
+        private const string JsonMediaType = "application/json";
+        private const string RegisterDescription = "Register a user account. An email will be sent upon successful registration.";
+
+        private readonly IHttpClientFactory _httpClientFactory;
+
+        public APITools(IHttpClientFactory httpClientFactory)
         {
-            // Generate a random string to use as a seed
-            Random random = new Random();
-            int randomSeed = random.Next();
-            string seedString = randomSeed.ToString(CultureInfo.InvariantCulture);
+            _httpClientFactory = httpClientFactory;
+        }
 
-            // Hash the random seed using SHA-256
-            using (SHA256 sha256 = SHA256.Create())
+        [McpServerTool, Description(RegisterDescription)]
+        public async Task<string> RegisterAsync([Description("Email address to register")] string email)
+        {
+            var password = GenerateRandomPassword(6);
+            var payload = new
             {
-                byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(seedString));
+                email,
+                password,
+                confirmPassword = password
+            };
 
-                // Convert the hash bytes to a hex string
-                string hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.BaseAddress = new Uri("https://localhost:7190");
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(JsonMediaType));
 
-                // Return the formatted string with Echo and the hashed seed
-                return await Task.FromResult($"Echo MCPServer: {paramInput}, here is the seed: {hashString}");
+                var response = await client.PostAsJsonAsync("/api/Identity/Register/Register", payload);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Log.Information("Successfully registered user: {Email}", email);
+                    return "An email has been sent. Please check your inbox to complete registration.";
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Log.Error("Failed to register user: {Email}, StatusCode: {StatusCode}, Error: {Error}",
+                        email, response.StatusCode, errorContent);
+                    return $"Failed to register user. StatusCode: {response.StatusCode}";
+                }
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An exception occurred while registering user: {Email}", email);
+                return "An error occurred during registration.";
+            }
+        }
+
+        private static string GenerateRandomPassword(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            var password = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            return password;
         }
     }
 }
