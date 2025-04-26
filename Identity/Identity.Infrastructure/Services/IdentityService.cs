@@ -75,8 +75,8 @@ internal class IdentityService : IIdentity
     }
 
 
-    public JsonWebKey GetPublicKey()
+    public Result<JsonWebKey> GetPublicKey()
     {
-        return this.jwtGenerator.GetPublicKey();
+        return Result<JsonWebKey>.SuccessWith(this.jwtGenerator.GetPublicKey());
     }
 }

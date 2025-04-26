@@ -6,7 +6,7 @@ namespace MCPClient.MCPClientServices
 {
     public class MCPServerRequester(IChatClient chatClient, IEnumerable<McpClientTool> tools) : IMCPServerRequester
     {
-        public async Task<string> RequestAsync(string prompt)
+        public async Task<Result<string>> RequestAsync(string prompt)
         {
             var messages = new List<ChatMessage>
             {
@@ -22,7 +22,7 @@ namespace MCPClient.MCPClientServices
                 responseBuilder.Append(update);
             }
 
-            return responseBuilder.ToString();
+            return Result<string>.SuccessWith(responseBuilder.ToString());
         }
     }
 }

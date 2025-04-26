@@ -8,6 +8,6 @@ namespace MCPClient.MCPClientServices
 {
     public interface IMCPServerRequester
     {
-        Task<string> RequestAsync(string prompt);
+        Task<Result<string>> RequestAsync(string prompt);
     }
 }

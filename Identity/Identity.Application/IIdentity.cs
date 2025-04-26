@@ -7,5 +7,5 @@ public interface IIdentity
     Task<Result<UserResponseModel>> Login(UserRequestModel userRequest);
 
     Task<Result> ChangePassword(ChangePasswordRequestModel changePasswordRequest);
-    JsonWebKey GetPublicKey();
+    Result<JsonWebKey> GetPublicKey();
 }

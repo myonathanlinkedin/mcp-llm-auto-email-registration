@@ -17,6 +17,9 @@
 		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.11.1" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.Application\Common.Application.csproj" />
+	</ItemGroup>
+	<ItemGroup>
 	  <None Update="appsettings.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>

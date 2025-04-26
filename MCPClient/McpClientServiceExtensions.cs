@@ -13,31 +13,32 @@ public static class McpClientServiceExtensions
 {
     public static IServiceCollection AddMcpClient(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<ILoggerFactory>(sp =>
-            LoggerFactory.Create(builder =>
-                builder.AddOpenTelemetry(opt => opt.AddOtlpExporter())));
-
+        // Register OpenAI Client
         services.AddScoped(sp =>
         {
-            var endpoint = configuration["API:Endpoint"]!;
             var apiKey = configuration["API:ApiKey"]!;
-            return new OpenAIClient(
-                new ApiKeyCredential(apiKey),
-                new OpenAIClientOptions { Endpoint = new Uri(endpoint) });
+            var endpoint = configuration["API:Endpoint"]!;
+            var apiKeyCredential = new ApiKeyCredential(apiKey);
+            var clientOptions = new OpenAIClientOptions { Endpoint = new Uri(endpoint) };
+
+            return new OpenAIClient(apiKeyCredential, clientOptions);
         });
 
+        // Register ISamplingChatClient
         services.AddScoped<ISamplingChatClient>(sp =>
         {
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            return openAIClient.GetChatClient("gpt-4o-mini")
+            var chatClient = openAIClient.GetChatClient("gpt-4o-mini")
                 .AsIChatClient()
                 .AsBuilder()
-                .UseOpenTelemetry(loggerFactory: loggerFactory, configure: o => o.EnableSensitiveData = true)
-                .Build() as ISamplingChatClient
-                ?? throw new InvalidCastException("SamplingChatClient build failed.");
+                .UseLogging(loggerFactory: loggerFactory)
+                .Build() as ISamplingChatClient;
+
+            return chatClient ?? throw new InvalidCastException("SamplingChatClient build failed.");
         });
 
+        // Register IChatClient
         services.AddScoped<IChatClient>(sp =>
         {
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
@@ -46,22 +47,26 @@ public static class McpClientServiceExtensions
                 .AsIChatClient()
                 .AsBuilder()
                 .UseFunctionInvocation()
-                .UseOpenTelemetry(loggerFactory: loggerFactory, configure: o => o.EnableSensitiveData = true)
+                .UseLogging(loggerFactory: loggerFactory)
                 .Build();
         });
 
+        // Register SseClientTransport
         services.AddScoped(sp =>
         {
             var serverEndpoint = configuration["MCP:Endpoint"]!;
             var serverName = configuration["MCP:ServerName"]!;
+            var uri = new Uri($"{serverEndpoint}/sse");
+
             return new SseClientTransport(new SseClientTransportOptions
             {
-                Endpoint = new Uri($"{serverEndpoint}/sse"),
+                Endpoint = uri,
                 Name = serverName,
                 ConnectionTimeout = TimeSpan.FromMinutes(1)
             });
         });
 
+        // Register IMcpClient
         services.AddScoped<IMcpClient>(sp =>
         {
             var transport = sp.GetRequiredService<SseClientTransport>();
@@ -80,14 +85,14 @@ public static class McpClientServiceExtensions
                 loggerFactory: loggerFactory).GetAwaiter().GetResult();
         });
 
-        // Call ListToolsAsync and register the tools as a singleton
-        services.AddSingleton<IEnumerable<McpClientTool>>(sp =>
+        // Register McpClientTools
+        services.AddScoped<IEnumerable<McpClientTool>>(sp =>
         {
             var mcpClient = sp.GetRequiredService<IMcpClient>();
-            var tools = mcpClient.ListToolsAsync().GetAwaiter().GetResult();
-            return tools;
+            return mcpClient.ListToolsAsync().GetAwaiter().GetResult();
         });
 
+        // Register MCPServerRequester
         services.AddScoped<IMCPServerRequester, MCPServerRequester>();
 
         return services;
