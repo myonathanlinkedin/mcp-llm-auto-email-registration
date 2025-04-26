@@ -13,6 +13,8 @@ public static class McpClientServiceExtensions
 {
     public static IServiceCollection AddMcpClient(this IServiceCollection services, IConfiguration configuration)
     {
+        var llmModel = configuration["API:LlmModel"]!;
+
         // Register OpenAI Client
         services.AddScoped(sp =>
         {
@@ -29,7 +31,7 @@ public static class McpClientServiceExtensions
         {
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            var chatClient = openAIClient.GetChatClient("gpt-4o-mini")
+            var chatClient = openAIClient.GetChatClient(llmModel)
                 .AsIChatClient()
                 .AsBuilder()
                 .UseLogging(loggerFactory: loggerFactory)
@@ -43,7 +45,7 @@ public static class McpClientServiceExtensions
         {
             var openAIClient = sp.GetRequiredService<OpenAIClient>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            return openAIClient.GetChatClient("gpt-4o-mini")
+            return openAIClient.GetChatClient(llmModel)
                 .AsIChatClient()
                 .AsBuilder()
                 .UseFunctionInvocation()
