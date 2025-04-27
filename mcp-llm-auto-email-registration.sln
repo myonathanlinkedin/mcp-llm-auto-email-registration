@@ -25,9 +25,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleIdentityServer", "Sim
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ModelContextProtocol", "ModelContextProtocol", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPClient", "MCPClient\MCPClient.csproj", "{185A4F00-F574-5F80-CD98-7F3478D756BB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCP.Client", "MCPClient\MCP.Client.csproj", "{185A4F00-F574-5F80-CD98-7F3478D756BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCPServer", "MCPServer\MCPServer.csproj", "{8B3A187B-DF59-EFF4-34F3-CA37CC868C80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MCP.Server", "MCPServer\MCP.Server.csproj", "{8B3A187B-DF59-EFF4-34F3-CA37CC868C80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

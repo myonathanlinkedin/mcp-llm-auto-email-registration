@@ -15,7 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Identity\Identity.Infrastructure\Identity.Infrastructure.csproj" />
       <ProjectReference Include="..\Identity\Identity.Web\Identity.Web.csproj" />
-      <ProjectReference Include="..\MCPClient\MCPClient.csproj" />
+      <ProjectReference Include="..\MCPClient\MCP.Client.csproj" />
     </ItemGroup>
 
     <ItemGroup>

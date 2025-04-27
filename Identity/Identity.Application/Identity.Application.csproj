@@ -16,7 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Common\Common.Application\Common.Application.csproj" />
-      <ProjectReference Include="..\..\MCPClient\MCPClient.csproj" />
+      <ProjectReference Include="..\..\MCPClient\MCP.Client.csproj" />
     </ItemGroup>
 
 </Project>
