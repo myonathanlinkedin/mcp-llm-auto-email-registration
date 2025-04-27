@@ -29,6 +29,9 @@
 		<PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.Application\Common.Application.csproj" />
+	</ItemGroup>
+	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

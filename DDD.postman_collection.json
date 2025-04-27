@@ -107,7 +107,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n  \"email\" : \"test@test.com\",\r\n  \"password\": \"123456\",\r\n  \"confirmPassword\": \"123456\"\r\n}",
+					"raw": "{\r\n  \"email\" : \"testkan@test.com\",\r\n  \"password\": \"123456\",\r\n  \"confirmPassword\": \"123456\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -126,6 +126,99 @@
 						"identity",
 						"Register",
 						"Register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send User Prompt 2",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Prompt\" : \"Bro Server! now please login me email: jackcorp@test666.com and password: GaOQtM & change the password with 123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7190/api/Prompt/SendUserPrompt/SendUserPrompt",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7190",
+					"path": [
+						"api",
+						"Prompt",
+						"SendUserPrompt",
+						"SendUserPrompt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send User Prompt 3",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Prompt\" : \"Bro please help me to reset password for this email: jackcorp@test666.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7190/api/Prompt/SendUserPrompt/SendUserPrompt",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7190",
+					"path": [
+						"api",
+						"Prompt",
+						"SendUserPrompt",
+						"SendUserPrompt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send User Prompt 1",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Prompt\" : \"hei dawg! my email: jackcorp1@test666.com please help me to register\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7190/api/Prompt/SendUserPrompt/SendUserPrompt",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7190",
+					"path": [
+						"api",
+						"Prompt",
+						"SendUserPrompt",
+						"SendUserPrompt"
 					]
 				}
 			},

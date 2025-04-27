@@ -10,31 +10,28 @@ internal class IdentityService : IIdentity
 
     private readonly UserManager<User> userManager;
     private readonly IJwtGenerator jwtGenerator;
-    private readonly IEmailSender emailSenderService; // Inject IEmailSender
+    private readonly IEmailSender emailSenderService;
 
     public IdentityService(
         UserManager<User> userManager,
         IJwtGenerator jwtGenerator,
-        IEmailSender emailSender) // Add emailSender in constructor
+        IEmailSender emailSender)
     {
         this.userManager = userManager;
         this.jwtGenerator = jwtGenerator;
-        this.emailSenderService = emailSender; // Assign emailSender
+        this.emailSenderService = emailSender;
     }
 
     public async Task<Result<IUser>> Register(UserRequestModel userRequest)
     {
         var user = new User(userRequest.Email);
 
-        var identityResult = await userManager.CreateAsync(
-            user,
-            userRequest.Password);
+        var identityResult = await userManager.CreateAsync(user, userRequest.Password);
 
         var errors = identityResult.Errors.Select(e => e.Description);
 
         if (identityResult.Succeeded)
         {
-            // Send humorous email after successful registration
             var subject = "🎉 Hooray! Your Account is Ready 🎉";
             var body = $"Congrats! 🎉 Your account has been created successfully. Now, the fun begins! 😎\n\n" +
                        $"Please log in using your email: '{userRequest.Email}' and password: '{userRequest.Password}'.\n\n" +
@@ -56,9 +53,7 @@ internal class IdentityService : IIdentity
             return InvalidErrorMessage;
         }
 
-        var passwordValid = await userManager.CheckPasswordAsync(
-            user,
-            userRequest.Password);
+        var passwordValid = await userManager.CheckPasswordAsync(user, userRequest.Password);
 
         if (!passwordValid)
         {
@@ -89,6 +84,41 @@ internal class IdentityService : IIdentity
         return identityResult.Succeeded
             ? Result.Success
             : Result.Failure(errors);
+    }
+
+    public async Task<Result> ResetPassword(string email)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            return InvalidErrorMessage;
+        }
+
+        var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
+
+        var newPassword = PasswordGenerator.Generate(6); // <== Using PasswordGenerator class
+
+        var identityResult = await userManager.ResetPasswordAsync(
+            user,
+            resetToken,
+            newPassword);
+
+        var errors = identityResult.Errors.Select(e => e.Description);
+
+        if (identityResult.Succeeded)
+        {
+            var subject = "🔒 Your Password Has Been Reset";
+            var body = $"Hello,\n\nYour password has been reset successfully. Here is your new password:\n\n" +
+                       $"Password: {newPassword}\n\n" +
+                       "Please log in and change it after logging in for better security.\n\nStay safe!";
+
+            await emailSenderService.SendEmailAsync(user.Email, subject, body);
+
+            return Result.Success;
+        }
+
+        return Result.Failure(errors);
     }
 
     public Result<JsonWebKey> GetPublicKey()

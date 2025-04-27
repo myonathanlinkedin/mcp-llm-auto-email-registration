@@ -10,7 +10,7 @@ public class IdentityController : ApiController
         RegisterUserCommand command)
         => await Send(command);
 
-    [HttpPost()]
+    [HttpPost]
     [Route(nameof(Login))]
     public async Task<ActionResult<UserResponseModel>> Login(
         LoginUserCommand command)
@@ -21,5 +21,11 @@ public class IdentityController : ApiController
     [Route(nameof(ChangePassword))]
     public async Task<ActionResult> ChangePassword(
         ChangePasswordCommand command)
+        => await Send(command);
+
+    [HttpPost]
+    [Route(nameof(ResetPassword))]
+    public async Task<ActionResult> ResetPassword(
+        ResetPasswordCommand command)
         => await Send(command);
 }
