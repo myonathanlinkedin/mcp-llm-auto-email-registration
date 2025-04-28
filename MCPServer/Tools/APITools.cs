@@ -11,9 +11,9 @@ namespace MCPServer.Tools
     {
         private const string JsonMediaType = "application/json";
         private const string RegisterDescription = "Register a user account. Upon successful registration, an email will be sent containing your login details. Please check your inbox for your email address and password. The password is provided for your convenience; it is recommended that you change it after your first login.";
-        private const string LoginDescription = "Log in using your email and password. A Bearer token will be returned for authentication purposes. Do not expose the token to the user.";
-        private const string ChangePasswordDescription = "Change the user's password. Requires a valid Bearer token obtained from a successful login. After a successful password change, do not expose the token. Briefly explain what the system has done.";
-        private const string ResetPasswordDescription = "Reset the user's password. A new random password will be generated and emailed to the user.";
+        private const string LoginDescription = "This system allows direct login via chat by prompting the user for their email and password. Upon successful login, a Bearer token will be returned for authentication purposes. Do not mention login or re-login after the user has logged in or received the token.";
+        private const string ChangePasswordDescription = "Change the user's password. A valid Bearer token, obtained from a successful login, is required. After a successful password change, do not expose the token. Briefly explain what the system has done. Advise the user to log in or re-login before proceeding if the password change does not work.";
+        private const string ResetPasswordDescription = "Reset the user's password. A new random password will be generated and emailed to the user. Advise the user to log in or re-login before proceeding if the password reset does not work.";
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _baseUrl;

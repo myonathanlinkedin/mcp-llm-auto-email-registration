@@ -95,6 +95,8 @@ public static class McpClientServiceExtensions
         });
 
         // Register MCPServerRequester
+        services.AddSingleton<IChatMessageStore, ChatMessageStore>();
+        services.AddScoped<IList<ChatMessage>, List<ChatMessage>>();
         services.AddScoped<IMCPServerRequester, MCPServerRequester>();
 
         return services;
