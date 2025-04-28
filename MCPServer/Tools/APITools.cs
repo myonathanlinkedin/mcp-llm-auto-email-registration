@@ -152,11 +152,10 @@ namespace MCPServer.Tools
         [McpServerTool, Description(ResetPasswordDescription)]
         public async Task<string> ResetPasswordAsync([Description("Email address to reset password for")] string email)
         {
-            var newPassword = PasswordGenerator.Generate(8);  // Generate a random new password
+            var newPassword = PasswordGenerator.Generate(6);  // Generate a random new password
             var payload = new
             {
-                email,
-                newPassword
+                email
             };
 
             try
