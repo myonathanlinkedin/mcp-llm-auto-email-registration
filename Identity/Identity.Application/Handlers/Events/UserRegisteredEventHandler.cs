@@ -69,16 +69,20 @@ public class UserRegisteredEventHandler : EmailNotificationHandlerBase<UserRegis
             e.Email,
             e.Password,
             "🎉 Hooray! Your Account is Ready 🎉",
-            $$"""
-            Write notification with the following details:
-            1. Greet the user warmly, with a friendly and exciting tone.
-            2. Provide these templates:
+            $"""
+            Write a plain text email. Follow these strict rules:
+
+            1. Greet the user with positivity.
+            2. Confirm that the account has been successfully created.
+            3. Include the following information:
                - Username: [EMAIL]
                - Your Password: [PASSWORD]
-            3. Add a reminder for the user to change their password after logging in for added security.
-            4. Use emoticons to enhance the tone.
-            5. Do not include any HTML tags, additional text, instructions, or words like 'sorry', 'remember to replace', or any notes.
-            6. Return the plain text only.
+            4. Avoid words like "sorry", "issue", or anything implying a problem.
+            5. Do **not** offer advice or instructions.
+            6. Do **not** include HTML tags or formatting.
+            7. Use emojis to maintain a friendly tone.
+            8. Return only the plain text message (no additional formatting or details).
+            9. Only return the plain text message. No extra content.
             """
         );
     }
@@ -101,21 +105,25 @@ public class PasswordResetEventHandler : EmailNotificationHandlerBase<PasswordRe
             e.NewPassword,
             "🔒 Your Password Has Been Reset",
             $"""
-            Write notification with the following details:
-            1. Confirm the user that their password has been reset.
-            2. Provide these templates:
+            Write a plain text email. Follow these strict rules:
+
+            1. Confirm that the password has been successfully reset.
+            2. Include the following information:
                - Username: [EMAIL]
                - New Password: [PASSWORD]
-            3. Add a reminder for the user to change their password after logging in for added security.
-            4. Use emoticons to enhance the tone.
-            5. Do not include any HTML tags, additional text, instructions, or words like 'sorry', 'remember to replace', or any notes.
-            6. Return the plain text only.
+            3. Avoid words like "sorry", "issue", or anything implying a problem.
+            4. Do **not** offer advice or instructions.
+            5. Do **not** include HTML tags or formatting.
+            6. Use emojis to maintain a friendly tone.
+            7. Return only the plain text message (no additional formatting or details).
+            8. Only return the plain text message. No extra content.
             """
         );
     }
 
     protected override string GetFooter() => "Stay secure and take care! 😊";
 }
+
 public class ChangePasswordEventHandler : EmailNotificationHandlerBase<PasswordChangedEvent>
 {
     public ChangePasswordEventHandler(
@@ -128,18 +136,22 @@ public class ChangePasswordEventHandler : EmailNotificationHandlerBase<PasswordC
     {
         return (
             e.Email,
-            "", // No password shown
+            e.NewPassword,
             "✅ Your Password Was Successfully Changed",
             $"""
-            Write notification with the following details:
-            1. Confirm that the user has successfully changed their password.
-            2. Provide these templates:
+            Write a plain text email. Follow these strict rules:
+
+            1. Greet the user with positivity.
+            2. Confirm that their password has been successfully changed.
+            3. Include the following information:
                - Username: [EMAIL]
-            3. Encourage them to reach out if this was not them.
-            4. Use a positive and professional tone with a hint of friendliness.
-            5. Use emoticons.
-            6. Do not include any HTML tags or extra text.
-            7. Return only plain text.
+               - New Password: [PASSWORD]
+            4. If this action was not initiated by them, advise them to reach out.
+            5. Avoid words like "sorry", "issue", or anything implying a problem.
+            6. Do **not** offer advice or instructions.
+            7. Do **not** include HTML tags or formatting.
+            8. Use emojis to maintain a friendly tone.
+            9. Only return the plain text message. No extra content.
             """
         );
     }
